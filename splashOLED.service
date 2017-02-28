@@ -1,0 +1,11 @@
+[Unit]
+Description=Boot Splash Screen on I2C OLED Display
+
+[Service]
+ExecStartPre=/usr/local/sbin/rtcSync
+ExecStart=/bin/bash -c "/usr/bin/python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py \"`hostname` booting...\" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm"
+StandardOutput=null
+
+[Install]
+WantedBy=basic.target
+Alias=splashOLED.service
