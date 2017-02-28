@@ -1,0 +1,99 @@
+#!/bin/bash
+
+fs_read_write () {
+	if [ "ro" == "$FS_STATUS" ]; then
+		echo "[APRS/aprsStart] System is read-only. Attempting to remount root filesystem read/write"
+		root-rw
+		FS_STATUS=`mount | sed -n -e "s/^\/dev\/.* on \/ .*(\(r[w|o]\).*/\1/p"`
+	fi
+}
+
+fs_read_only () {
+	if [ "rw" == "$FS_STATUS" ]; then
+		echo "[APRS/aprsStart] System is read/write. Attempting to remount root filesystem read-only"
+		root-ro
+		FS_STATUS=`mount | sed -n -e "s/^\/dev\/.* on \/ .*(\(r[w|o]\).*/\1/p"`
+	fi
+}
+
+
+# note if / is ro or rw
+FS_INITIAL_STATUS=`mount | sed -n -e "s/^\/dev\/.* on \/ .*(\(r[w|o]\).*/\1/p"`
+FS_STATUS=$FS_INITIAL_STATUS
+echo "[APRS/aprsStart] / is $FS_INITIAL_STATUS"
+
+# set system clock from RTC
+/usr/local/sbin/rtcSync
+
+# set the system hostname from the EEPROM
+# only update the system if EEPROM doesn't match
+HOSTNAME_FROM_EE=`eeprom_2464 --read /dev/stdout --string --start-address 0 --n-bytes 32 2>/dev/null`
+HOSTNAME_FROM_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
+
+# if they don't match, then we need to fix
+if [[ "$HOSTNAME_FROM_EE" != "$HOSTNAME_FROM_HOSTNAME" ]]; then
+	echo "[APRS/aprsStart] Hostname from EEPROM '$HOSTNAME_FROM_EE' doesn't match hostname from /etc/hostname '$HOSTNAME_FROM_HOSTNAME'"
+
+	HOSTNAME_NEW="aprs-unconfigured"
+
+	# check if hostname contains non-ASCII characters
+	# if so, that is a sign the EEPROM hasn't been initialized.
+	# so we then set the hostname to the default
+	if [[ $HOSTNAME_FROM_EE = *[![:ascii:]]* ]]; then
+		echo "[APRS/aprsStart] Hostname EEPROM contains non-ASCII characters. Using default hostname."
+	else
+		HOSTNAME_NEW=$HOSTNAME_FROM_EE
+	fi
+
+	# go read/write
+	fs_read_write
+
+
+	echo "[APRS/aprsStart] Setting hostname to '$HOSTNAME_NEW'"
+	# set the hostname and update EEPROM
+	sethostname "$HOSTNAME_NEW" 2> /dev/null
+
+	# put into syslog
+	logger "aprsStart set hostname to '$HOSTNAME_NEW'"
+
+
+fi
+
+
+# create /mnt/data if it doesn't exist
+# check to see if /mnt/data is mounted by looking at grep's return code
+grep /mnt/data /proc/mounts > /dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+	echo "[APRS/aprsStart] /mnt/data not mounted"
+
+	echo "[APRS/aprsStart] Mounting /mnt/data"
+	mount /mnt/data
+
+	if [[ $? -ne 0 ]]; then
+		echo "[APRS/aprsStart] Mount failed. Attempting to create filesystem ... "
+
+		# go read/write
+		fs_read_write
+
+		# external script that creates partition from free space, makes filesystem
+		# adds /etc/fstab entry, and mounts
+		addDataPartition
+
+		if [[ $? -eq 0 ]]; then
+			echo "[APRS/aprsStart] /mnt/data succsessfully created"
+			df -h /mnt/data
+		else
+			echo "[APRS/aprsStart] Error creating /mnt/data"
+		fi
+	else
+		echo "[APRS/aprsStart] /mnt/data successfully mounted"
+	fi
+fi
+
+
+# clean-up and be done
+# return to read-only if we started as read-only and are now read/write
+if [[ "$FS_INITIAL_STATUS" == "ro" && "$FS_STATUS" == "rw" ]]; then
+	# return to read-only
+	fs_read_only
+fi
