@@ -1,0 +1,140 @@
+#!/usr/bin/php -q
+<?
+function calcNextStart($lastEnd) {
+	/* it seems that Linux likes 2048 divisible start locations */
+	return (int) (ceil(($lastEnd+1)/2048)*2048);
+}
+
+
+$mountPoint='/mnt/data';
+$blockDevice='/dev/mmcblk0';
+$partitionPrefix=$blockDevice . 'p';
+
+/* use sfdisk from linux-utils to dump current partition table */
+$sfdisk_lines=array();
+$retval='';
+$sfdisk=exec("sfdisk -d " . $blockDevice, $sfdisk_lines, $retval);
+
+if ( 0 != $retval ) {
+	printf("# error. sfdisk returned %d. Aborting...\n",$retval);
+	return $retval;
+}
+
+/*
+parse sfdisk output to learn about our existing partitions and then assemble new
+partition table with p3 using the remainder of the disk, if it doesn't exist
+*/
+$sfdisk_output_lines=array();
+$partition=array();
+
+for ( $i=0 ; $i<count($sfdisk_lines) ; $i++ ) {
+	if (  false !== strpos($sfdisk_lines[$i],$partitionPrefix) ) {
+		/* actual partition */
+
+		$partitionName=substr($sfdisk_lines[$i],0,strlen($partitionPrefix)+1);
+
+		$p = explode(",",$sfdisk_lines[$i]);
+
+		for ( $j=0 ; $j<count($p) ; $j++ ) {
+			$pp=explode("=",$p[$j]);
+
+			/* search for tokens */
+			if ( false !== strpos($pp[0],"start") ) 
+				$partition[$partitionName]['start']=trim($pp[1]);
+			if ( false !== strpos($pp[0],"size") ) 
+				$partition[$partitionName]['size']=trim($pp[1]);
+			if ( false !== strpos($pp[0],"Id") ) 
+				$partition[$partitionName]['id']=trim($pp[1]);
+		}
+
+//		printf("# p2 start=%d size=%d Id='%s'\n",$p2start,$p2size,$p2Id);
+	}
+
+
+
+	if (  false === strpos($sfdisk_lines[$i],$partitionPrefix . '3') ) {
+		/* copy over input to output unless we are are p3 partition */
+		$sfdisk_output_lines[$i]=$sfdisk_lines[$i];
+	} else {
+		/* we are on p3 */
+		$sfdisk_output_lines[$i]=sprintf("%s3 : start=%9d, size=         , Id= c",$partitionPrefix,calcNextStart($partition[$partitionPrefix . '2']['start']+$partition[$partitionPrefix . '2']['size']));
+
+	}
+}
+
+print_r($partition);
+
+if ( 0 != $partition[$partitionPrefix . '3']['size'] ) {
+	printf("# %s3 size is non-zero. Aborting...\n",$partitionPrefix);
+	exit(100);
+}
+
+/* turn back into a string */
+$sfdisk_output = implode("\n",$sfdisk_output_lines);
+
+
+$output=array();
+
+/* build and execute sfdisk command to add the partition */
+printf("# updating partition table with new entry using the following sfdisk input:\n%s\n",$sfdisk_output);
+$cmd=sprintf("echo \"%s\" | sfdisk --no-reread %s",$sfdisk_output,$blockDevice);
+exec($cmd,$output,$retval);
+printf("# done.\n");
+
+/* use partprobe to notify the kernel about the new partition */
+printf("# notifying kernel about new partition table ... \n");
+exec("partprobe",$output,$retval);
+if ( 0 != $retval ) {
+	printf("# partprobe returned %d. This is a problem and may leave system in unbootable state. Aborting...\n",$retval);
+	exit($retval);
+}
+printf("# done.\n");
+
+/* make vfat filesystem on new partition */
+printf("# making vfat filesystem ... \n");
+$cmd=sprintf("mkfs.vfat %sp3",$blockDevice);
+exec($cmd,$output,$retval);
+if ( 0 != $retval ) {
+	printf("# error making vfat filesystem. mkfs.vfat returned %d. Aborting...\n",$retval);
+	exit($retval);
+}
+printf("# done.\n");
+
+
+/* create mount point /mnt/data */
+printf("# creating mount point ... \n");
+exec("mkdir -p " . $mountPoint,$output,$retval);
+if ( 0 != $retval ) {
+	printf("# mkdir returned %d. Aborting...\n",$retval);
+	exit($retval);
+}
+printf("# done.\n");
+
+/* check if entry already exists in fstab  */
+printf("# adding /etc/fstab entry if needed  ... \n");
+$cmd=sprintf("grep \"%sp3\" /etc/fstab",$blockDevice);
+exec($cmd,$output,$retval);
+if ( 0 == $retval ) {
+	/* already exists */
+	printf("# WARNING: /etc/fstab entry already exists for %sp3\n",$blockDevice);
+} else {
+	/* doesn't exist. append to the end of /etc/fstab */
+	$cmd=sprintf("echo \"%sp3\t%s\tvfat\tdefaults,noatime,noexec\t\t\t0\t2\" >> /etc/fstab",$blockDevice,$mountPoint);
+	exec($cmd,$output,$retval);
+	if ( 0 != $retval ) {
+		printf("# error adding /etc/fstab entry. Aborting...\n");
+		exit($retval);
+	}
+}
+printf("# done.\n");
+
+
+/* mount it */
+printf("# mounting new filesystem ... \n");
+exec("mount " . $mountPoint,$output,$retval);
+if ( 0 != $retval ) {
+	printf("# error mounting. mount returned %d. Aborting...\n",$retval);
+	exit($retval);
+}
+printf("# done.\n");
+?>

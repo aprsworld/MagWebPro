@@ -1,0 +1,19 @@
+#!/bin/bash
+CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
+NEW_HOSTNAME=$1
+
+
+# Make sure only root can run our script
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
+
+echo $NEW_HOSTNAME > /etc/hostname
+sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
+hostname $NEW_HOSTNAME
+echo -n $(cat /etc/hostname) | eeprom_2464 --write /dev/stdin --string --n-bytes 32 --start-address 0
+
+echo "Current hostname: $CURRENT_HOSTNAME"
+echo "    New hostname: $NEW_HOSTNAME"

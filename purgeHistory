@@ -1,0 +1,6 @@
+#!/bin/bash
+rm -rf /home/aprs/.ssh
+rm -f /home/aprs/.bash_history
+rm -f /home/aprs/.gitconfig
+rm -rf /root/.ssh
+rm -f /root/.bash_history
