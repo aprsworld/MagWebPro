@@ -1,0 +1,10 @@
+[Unit]
+Description=APRS World Start-up Sequence
+
+[Service]
+ExecStart=/usr/local/sbin/aprsStart
+StandardOutput=null
+
+[Install]
+WantedBy=basic.target
+Alias=aprsStart.service
