@@ -115,3 +115,10 @@ fi
 
 # tiny OLED message
 python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "Booting ..." /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+
+# firewal configuration
+# forward requests from privledged port 80 to 8080
+iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
+# drop external connetions to port 4010
+iptables -A INPUT -p tcp -i eth0 --destination-port 4010 -j DROP
+iptables -A INPUT -p tcp -i wlan0 --destination-port 4010 -j DROP
