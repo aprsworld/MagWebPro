@@ -1,0 +1,11 @@
+[Unit]
+Description=APRS World Magnum Reader
+
+[Service]
+ExecStart=/usr/local/bin/magnumReaderStart
+StandardOutput=null
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

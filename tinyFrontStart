@@ -1,0 +1,2 @@
+#!/bin/bash
+su aprs -c "screen -D -m -S tinyFront bash -c \"cd /home/aprs/tinyFrontPanelLcd ; python charlie2.py\""

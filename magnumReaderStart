@@ -1,0 +1,2 @@
+#!/bin/bash
+su aprs -c "screen -D -m -S magnumReader bash -c \"/usr/local/bin/magnumReader -n 300 -s 2 -t localhost\""
