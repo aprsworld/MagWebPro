@@ -103,6 +103,8 @@ if [[ $? -ne 0 ]]; then
 	fi
 fi
 
+# make sure /mnt/data/loglocal exists
+mkdir -p /mnt/data/loglocal
 
 # clean-up and be done
 # return to read-only if we started as read-only and are now read/write
