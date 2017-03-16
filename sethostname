@@ -9,10 +9,18 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# make sure we have a set and non-null argument
+if [ -z "$1" ]; then
+	echo "USAGE: sethostname newHostName";
+	exit 1;
+fi
 
+
+# update running system
 echo $NEW_HOSTNAME > /etc/hostname
 sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
 hostname $NEW_HOSTNAME
+# save to EEPROM
 echo -n $(cat /etc/hostname) | eeprom_2464 --write /dev/stdin --string --n-bytes 32 --start-address 0
 
 echo "Current hostname: $CURRENT_HOSTNAME"

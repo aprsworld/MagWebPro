@@ -1,9 +1,13 @@
 #!/bin/bash
 
+function lcd_prompt {
+		echo "[LCD PROMPT] " "$1"
+		python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "$1" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+}
+
 function button_prompt_wait {
 	# prompt operator to press the button 
-	echo $2
-	python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "$2" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+	lcd_prompt "$2"
 	
 	# wait for button press
 	while : ; do
@@ -21,8 +25,7 @@ function button_prompt_wait {
 function barcode_scanner_prompt_wait {
 	# if device doesn't exist, prompt user to plugin and wait until it does exist
 	if [ ! -e $1 ]; then
-		echo "Plug in USB barcode scanner"
-		python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "Plug in USB barcode scanner" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+		lcd_prompt "Plug in USB barcode scanner"
 
 		# wait until device file exists
 		while [ ! -e $1 ]; do
@@ -33,16 +36,15 @@ function barcode_scanner_prompt_wait {
 	fi
 
 	# prompt operator to scan pcb bar code 
-	echo "Scan PCB barcode"
-	python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "Scan PCB barcode" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+	lcd_prompt "Scan PCB barcode" 
 	
 	# wait for button press
 	read -r BARCODE < $1
 
-	echo "Read $BARCODE from barcode scanner"
 	button_prompt_wait 27 "SN=$BARCODE OK? MIDDLE"
 
 	# set hostname
+	sethostname $BARCODE
 }
 
 # Export button GPIOs if they aren't already
@@ -64,23 +66,53 @@ fi
 # wait for export to happen and direction permissions to be set
 sleep 0.1
 
+lcd_prompt "Initial test"
+
 # set direction to input
 echo in > /sys/class/gpio/gpio17/direction
 echo in > /sys/class/gpio/gpio27/direction
 echo in > /sys/class/gpio/gpio18/direction
 
+# test RTC by attempting read. Will return 0 if good
+rtc_ds1307 --i2c-address 0x68 --read 
+if [[ $? -ne 0 ]]; then
+	lcd_prompt "RTC faulty!"
+	exit 1
+else
+	lcd_prompt "RTC passed"
+fi
+
+# test EEPROM by attempting read. Will return 0 if good
+eeprom_2464 --i2c-address 0x68 --n-bytes 1 --read /dev/null
+if [[ $? -ne 0 ]]; then
+	lcd_prompt "EEPROM faulty!"
+	exit 1
+else
+	lcd_prompt "EEPROM passed"
+fi
+
+# test buttons
 button_prompt_wait 18 "Press LEFT button"
 button_prompt_wait 27 "Press MIDDLE button"
 button_prompt_wait 17 "Press RIGHT button"
 
+# switch to rw so we can set hostname
+root-rw
+
+# use USB barcode scanner to set hostname
 barcode_scanner_prompt_wait /dev/ttyACM0
 
-# prompt operator to press the middle button (GPIO27)
-#cat /sys/class/gpio/gpio27/value
 
-# prompt operator to press the right button (GPIO17)
-#cat /sys/class/gpio/gpio17/value
 
+# release the button GPIOs from sysfs
 echo 17 > /sys/class/gpio/unexport
 echo 18 > /sys/class/gpio/unexport
 echo 27 > /sys/class/gpio/unexport
+
+
+lcd_prompt "`hostname` shutting down"
+
+root-ro
+
+# do shutdown
+halt
