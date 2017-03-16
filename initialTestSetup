@@ -1,0 +1,86 @@
+#!/bin/bash
+
+function button_prompt_wait {
+	# prompt operator to press the button 
+	echo $2
+	python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "$2" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+	
+	# wait for button press
+	while : ; do
+		read -r BUTTON < /sys/class/gpio/gpio$1/value
+	
+		if [ "$BUTTON" == "1" ]
+		then
+			break
+		fi
+
+		sleep 0.1
+	done
+}
+
+function barcode_scanner_prompt_wait {
+	# if device doesn't exist, prompt user to plugin and wait until it does exist
+	if [ ! -e $1 ]; then
+		echo "Plug in USB barcode scanner"
+		python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "Plug in USB barcode scanner" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+
+		# wait until device file exists
+		while [ ! -e $1 ]; do
+			sleep 0.1
+		done
+
+		sleep 1
+	fi
+
+	# prompt operator to scan pcb bar code 
+	echo "Scan PCB barcode"
+	python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "Scan PCB barcode" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+	
+	# wait for button press
+	read -r BARCODE < $1
+
+	echo "Read $BARCODE from barcode scanner"
+	button_prompt_wait 27 "SN=$BARCODE OK? MIDDLE"
+
+	# set hostname
+}
+
+# Export button GPIOs if they aren't already
+if [ ! -e /sys/class/gpio/gpio17/direction ]; then
+	echo "# exporting GPIO17 for sysfs control"
+	echo 17 > /sys/class/gpio/export
+fi
+
+if [ ! -e /sys/class/gpio/gpio27/direction ]; then
+	echo "# exporting GPIO27 for sysfs control"
+	echo 27 > /sys/class/gpio/export
+fi
+
+if [ ! -e /sys/class/gpio/gpio18/direction ]; then
+	echo "# exporting GPIO18 for sysfs control"
+	echo 18 > /sys/class/gpio/export
+fi
+
+# wait for export to happen and direction permissions to be set
+sleep 0.1
+
+# set direction to input
+echo in > /sys/class/gpio/gpio17/direction
+echo in > /sys/class/gpio/gpio27/direction
+echo in > /sys/class/gpio/gpio18/direction
+
+button_prompt_wait 18 "Press LEFT button"
+button_prompt_wait 27 "Press MIDDLE button"
+button_prompt_wait 17 "Press RIGHT button"
+
+barcode_scanner_prompt_wait /dev/ttyACM0
+
+# prompt operator to press the middle button (GPIO27)
+#cat /sys/class/gpio/gpio27/value
+
+# prompt operator to press the right button (GPIO17)
+#cat /sys/class/gpio/gpio17/value
+
+echo 17 > /sys/class/gpio/unexport
+echo 18 > /sys/class/gpio/unexport
+echo 27 > /sys/class/gpio/unexport
