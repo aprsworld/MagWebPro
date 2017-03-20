@@ -110,9 +110,17 @@ echo 18 > /sys/class/gpio/unexport
 echo 27 > /sys/class/gpio/unexport
 
 
+lcd_prompt "printing label"
+read -r HOSTNAME < /etc/hostname
+MAC=`ifconfig | grep eth0 | cut -c39-55`
+URL="http://192.168.10.188/registration/mwp.php?mac=$MAC&hostname=$HOSTNAME"
+curl "$URL"
+
+
+
 lcd_prompt "`hostname` shutting down"
 
 root-ro
 
 # do shutdown
-halt
+#halt
