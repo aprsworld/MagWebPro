@@ -8,28 +8,28 @@ function readEEPROM($startAddress,$nBytes) {
 
 
 $e=array();
-$e['net']['dns']['nameserver'][0]='8.8.8.8';
-$e['net']['dns']['nameserver'][1]='8.8.4.4';
 
-$e['net']['interface']['eth0']['mode']     ='static';
-$e['net']['interface']['eth0']['ip']       ='192.168.10.77';
-$e['net']['interface']['eth0']['netmask']  ='255.255.255.0';
-$e['net']['interface']['eth0']['gateway']  ='192.168.10.1';
+$e['net']['interface']['eth0']['mode']          ='static';
+$e['net']['interface']['eth0']['ip']            ='192.168.10.189';
+$e['net']['interface']['eth0']['netmask']       ='255.255.255.0';
+$e['net']['interface']['eth0']['gateway']       ='192.168.10.1';
+$e['net']['interface']['eth0']['nameserver'][0] ='8.8.8.8';
+$e['net']['interface']['eth0']['nameserver'][1] ='8.8.4.4';
 
-$e['net']['interface']['wlan0']['mode']    ='static';
-$e['net']['interface']['wlan0']['ip']       ='192.168.10.77';
-$e['net']['interface']['wlan0']['netmask']  ='255.255.255.0';
-//$e['net']['interface']['wlan0']['gateway']  ='192.168.10.1';
-$e['net']['interface']['wlan0']['ssid']    ='aprsworld';
-$e['net']['interface']['wlan0']['psk']     ='zestopenguin';
+$e['net']['interface']['wlan0']['mode']         ='dhcp';
+$e['net']['interface']['wlan0']['ip']           ='192.168.10.77';
+$e['net']['interface']['wlan0']['netmask']      ='255.255.255.0';
+$e['net']['interface']['wlan0']['gateway']      ='192.168.10.1';
+$e['net']['interface']['wlan0']['ssid']         ='aprsworld';
+$e['net']['interface']['wlan0']['psk']          ='zestopenguin';
 
-print_r($e);
+//print_r($e);
 
 $json=json_encode($e);
-printf("# json encoded strlen=%d\n",strlen($json));
-echo $json;
+//printf("# json encoded strlen=%d\n",strlen($json));
+//echo $json;
 
-print_r(json_decode($json,JSON_OBJECT_AS_ARRAY));
+//print_r(json_decode($json,JSON_OBJECT_AS_ARRAY));
 
 
 
@@ -64,6 +64,12 @@ if ( isset($e['net']['interface']['eth0']['mode']) ) {
 			$eni[]=sprintf("\tgateway %s",$es['gateway']);
 	}
 	
+	/* add device specific nameservers, if we have any */
+	if ( count($es['nameserver']) > 0 ) {
+		$dns=implode(" ",$es['nameserver']);
+		$eni[]=sprintf("\tdns-nameservers %s",$dns);
+	}
+
 	$eni[]='';
 }
 
@@ -93,7 +99,13 @@ if ( isset($e['net']['interface']['wlan0']['mode']) ) {
 			$eni[]=sprintf("\tgateway %s",$es['gateway']);
 	}
 
-	$eni[]="";
+	/* add device specific nameservers, if we have any */
+	if ( isset($es['nameserver']) && count($es['nameserver']) > 0 ) {
+		$dns=implode(" ",$es['nameserver']);
+		$eni[]=sprintf("\tdns-nameservers %s",$dns);
+	}
+
+	
 	$eni[]="\t# wpa-supplicant options";
 	$eni[]="\twpa-ap-scan 1";
 	$eni[]="\twpa-scan-ssid 1";
