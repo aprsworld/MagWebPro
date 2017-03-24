@@ -1,0 +1,34 @@
+#!/usr/bin/python
+
+# python expect
+import pexpect
+
+# open wpa_supplicant cli 
+# on some systems the path to the socket will need to be changed
+# and it will most likely need to be run as roon
+child = pexpect.spawn('wpa_cli -i wlan0 -p /run/wpa_supplicant');
+# don't echo our commands
+child.setecho(False)
+
+# wait for interactive mode
+child.expect('Interactive mode');
+# start a scan
+child.sendline('scan');
+# wait for scan results event
+child.expect('CTRL-EVENT-SCAN-RESULTS');
+# get scan results
+child.sendline('scan_results');
+# send EOF which causes wpa_clu to exit
+child.sendeof();
+
+# tell pexpect to go away when EOF reached
+child.expect(pexpect.EOF);
+
+# iterate through string and print only lines that contain ':' (ie have an access point)
+for line in child.before.splitlines():
+	if ":" in line:
+		print line
+
+# print all of child
+# print child.before;
+
