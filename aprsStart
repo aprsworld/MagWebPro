@@ -28,6 +28,9 @@ tinyFrontOLED "MagWebPro booting..." "" "Setting Clock" ""
 # set system clock from RTC
 /usr/local/sbin/rtcSync
 
+# tiny OLED message
+tinyFrontOLED "MagWebPro booting..." "" "Setting Hostname" ""
+
 # set the system hostname from the EEPROM
 # only update the system if EEPROM doesn't match
 HOSTNAME_FROM_EE=`eeprom_2464 --read /dev/stdout --string --start-address 0 --n-bytes 32 2>/dev/null`
@@ -63,6 +66,20 @@ fi
 
 # tiny OLED message
 tinyFrontOLED "MagWebPro booting..." "" "Hostname is" "$HOSTNAME_NEW"
+
+
+# check and possibly re-generate /etc/network/interfaces
+# read JSON network configuration from EEPROM and generate proposed interfaces
+eeprom_2464 --read /dev/stdout --string --start-address 289 --n-bytes 479 2>/dev/null | /home/aprs/MagWebPro/networkFromJSON /tmp/interfaces.proposed  2>/dev/null
+MD5_INTERFACES_NOW=     `md5sum /etc/network/interfaces`
+MD5_INTERFACES_PROPOSED=`md5sum /tmp/interfaces.proposed`
+
+logger "aprsStart md5sum=$MD5_INTERFACES_NOW"
+logger "aprsStart md5sum=$MD5_INTERFACES_PROPOSED"
+
+if [[ "$MD5_INTERFACES_NOW" != "$MD5_INTERFACES_PROPOSED" ]]; then
+	logger "aprsStart should copy /tmp/interfaces.proposed to /etc/network/interfaces"
+fi
 
 
 # create /mnt/data if it doesn't exist
