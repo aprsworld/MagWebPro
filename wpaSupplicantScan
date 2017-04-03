@@ -2,6 +2,14 @@
 
 # python expect
 import pexpect
+import os
+import sys
+
+if os.geteuid() != 0:
+    exit("You need to have root privileges to run this script.\nPlease try again, this time using 'sudo'. Exiting.")
+
+sys.stderr.write('# Starting wpa_cli\n')
+sys.stderr.flush()
 
 # open wpa_supplicant cli 
 # on some systems the path to the socket will need to be changed
@@ -12,10 +20,18 @@ child.setecho(False)
 
 # wait for interactive mode
 child.expect('Interactive mode');
+
+sys.stderr.write('# Starting scan\n')
+sys.stderr.flush()
+
 # start a scan
 child.sendline('scan');
 # wait for scan results event
 child.expect('CTRL-EVENT-SCAN-RESULTS');
+
+sys.stderr.write('# Scan completed. Requesting results.\n')
+sys.stderr.flush()
+
 # get scan results
 child.sendline('scan_results');
 # send EOF which causes wpa_clu to exit
@@ -23,6 +39,9 @@ child.sendeof();
 
 # tell pexpect to go away when EOF reached
 child.expect(pexpect.EOF);
+
+sys.stderr.write('# wpa_cli done. Printing results:\n')
+sys.stderr.flush()
 
 # iterate through string and print only lines that contain ':' (ie have an access point)
 for line in child.before.splitlines():

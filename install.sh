@@ -8,3 +8,4 @@ cp sethostname /usr/local/sbin
 # cp systemd/splashOLED.service
 cp etc/vimrc.local /etc/vim
 # cp bash.bashrc
+cp wpaSupplicantScan /usr/local/sbin
