@@ -23,7 +23,7 @@ FS_STATUS=$FS_INITIAL_STATUS
 echo "[APRS/aprsStart] / is $FS_INITIAL_STATUS"
 
 # tiny OLED message
-python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "setting clock" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+tinyFrontOLED "MagWebPro booting..." "" "Setting Clock" ""
 
 # set system clock from RTC
 /usr/local/sbin/rtcSync
@@ -62,7 +62,7 @@ if [[ "$HOSTNAME_FROM_EE" != "$HOSTNAME_FROM_HOSTNAME" ]]; then
 fi
 
 # tiny OLED message
-python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "hostname is $HOSTNAME_NEW" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+tinyFrontOLED "MagWebPro booting..." "" "Hostname is" "$HOSTNAME_NEW"
 
 
 # create /mnt/data if it doesn't exist
@@ -72,7 +72,7 @@ if [[ $? -ne 0 ]]; then
 	echo "[APRS/aprsStart] /mnt/data not mounted"
 
 	# tiny OLED message
-	python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "/mnt/data not mounted" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+	tinyFrontOLED "MagWebPro booting..." "" "/mnt/data" "   not mounted"
 
 	echo "[APRS/aprsStart] Mounting /mnt/data"
 	mount /mnt/data
@@ -99,7 +99,7 @@ if [[ $? -ne 0 ]]; then
 		echo "[APRS/aprsStart] /mnt/data successfully mounted"
 
 		# tiny OLED message
-		python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "/mnt/data mounted" /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+		tinyFrontOLED "MagWebPro booting..." "" "/mnt/data" "   mounted"
 	fi
 fi
 
@@ -114,7 +114,7 @@ if [[ "$FS_INITIAL_STATUS" == "ro" && "$FS_STATUS" == "rw" ]]; then
 fi
 
 # tiny OLED message
-python /home/aprs/tinyFrontPanelLcd/tinyLCDimage.py "Booting ..." /home/aprs/tinyFrontPanelLcd/res/images/logo2.ppm
+tinyFrontOLED "MagWebPro booting..." "" "Setting Firewall" ""
 
 # firewal configuration
 # forward requests from privledged port 80 to 8080
@@ -122,3 +122,6 @@ iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
 # drop external connetions to port 4010
 iptables -A INPUT -p tcp -i eth0 --destination-port 4010 -j DROP
 iptables -A INPUT -p tcp -i wlan0 --destination-port 4010 -j DROP
+
+# this message will display for a bit
+tinyFrontOLED "MagWebPro booting..." "" "Up Soon!" ""

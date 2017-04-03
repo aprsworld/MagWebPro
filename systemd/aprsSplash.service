@@ -1,0 +1,21 @@
+[Unit]
+Description=APRS World Splash Screen on OLED
+
+Before=network-pre.target
+Wants=network-pre.target
+
+DefaultDependencies=no
+Requires=local-fs.target
+After=local-fs.target
+
+[Service]
+Type=oneshot
+
+ExecStart=/bin/bash -c 'tinyFrontOLED "MagWebPro   " "Starting"'
+
+StandardOutput=null
+
+RemainAfterExit=yes
+
+[Install]
+WantedBy=network.target
