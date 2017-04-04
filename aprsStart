@@ -70,15 +70,30 @@ tinyFrontOLED "MagWebPro booting..." "" "Hostname is" "$HOSTNAME_NEW"
 
 # check and possibly re-generate /etc/network/interfaces
 # read JSON network configuration from EEPROM and generate proposed interfaces
-eeprom_2464 --read /dev/stdout --string --start-address 289 --n-bytes 479 2>/dev/null | /home/aprs/MagWebPro/networkFromJSON /tmp/interfaces.proposed  2>/dev/null
-MD5_INTERFACES_NOW=     `md5sum /etc/network/interfaces`
-MD5_INTERFACES_PROPOSED=`md5sum /tmp/interfaces.proposed`
+eeprom_2464 --read /dev/stdout --string --start-address 256 --n-bytes 512 2>/dev/null | networkFromJSON /tmp/interfaces.proposed  2>/dev/null
 
-logger "aprsStart md5sum=$MD5_INTERFACES_NOW"
-logger "aprsStart md5sum=$MD5_INTERFACES_PROPOSED"
+# check if /tmp/interfaces.proposed exists. If it does, then we can see if we should update
+if [ -e /tmp/interfaces.proposed ]; then
+	MD5_INTERFACES_NOW=`md5sum /etc/network/interfaces | cut -c1-32`
+	MD5_INTERFACES_PROPOSED=`md5sum /tmp/interfaces.proposed | cut -c1-32`
 
-if [[ "$MD5_INTERFACES_NOW" != "$MD5_INTERFACES_PROPOSED" ]]; then
-	logger "aprsStart should copy /tmp/interfaces.proposed to /etc/network/interfaces"
+	logger "aprsStart /etc/network/interfaces  md5sum=$MD5_INTERFACES_NOW"
+	logger "aprsStart /tmp/interfaces.proposed md5sum=$MD5_INTERFACES_PROPOSED"
+
+	if [[ "$MD5_INTERFACES_NOW" != "$MD5_INTERFACES_PROPOSED" ]]; then
+		tinyFrontOLED "MagWebPro booting..." "" "Updating network" "   settings"
+		logger "aprsStart copying /tmp/interfaces.proposed to /etc/network/interfaces"
+
+		fs_read_write
+		# backup /etc/network/interfaces
+		cp /etc/network/interfaces /etc/network/interfaces.bak
+		# copy freshly generated file over
+		cp /tmp/interfaces.proposed /etc/network/interfaces
+
+		tinyFrontOLED "MagWebPro re-booting" "" "To apply new" "   network settings"
+		# reboot now
+		reboot
+	fi
 fi
 
 
