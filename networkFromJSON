@@ -21,19 +21,19 @@ $eni[]="# this file is auto-generated. Manual changes will be overwritten at nex
 $eni[]="";
 
 /* eth0 */
-if ( isset($e['net']['interface']['eth0']['mode']) && '' != $e['net']['interface']['eth0']['mode'] && 'disabled' != $e['net']['interface']['eth0']['mode'] ) {
+if ( isset($e['net']['interface']['eth0']['mode']) && 'client' == $e['net']['interface']['eth0']['mode']  ) {
 	$nInterfaces++;
 
 	/* make shorter $es name to access elements */
 	$es=$e['net']['interface']['eth0'];
 
 	/* stanza */
-	if ( 'dhcp'==$es['mode'] ) {
+	if ( 'dhcp'==$es['configuration'] ) {
 		/* DHCP mode */
 		/* top of section */
 		$eni[]='allow-auto eth0';
 		$eni[]='iface eth0 inet dhcp';
-	} else if ( 'static'==$es['mode'] ) {
+	} else if ( 'static'==$es['configuration'] ) {
 		/* static mode */
 		/* top of section */
 		$eni[]='allow-auto eth0';
@@ -68,13 +68,13 @@ if ( isset($e['net']['interface']['wlan0']['mode']) && '' != $e['net']['interfac
 	print_r($es);
 
 	/* stanza */
-	if ( 'dhcp'==$es['mode'] ) {
+	if ( 'dhcp'==$es['configuration'] ) {
 		/* DHCP mode */
 		/* top of section */
 		$eni[]='allow-hotplug wlan0';
 		$eni[]='allow-auto wlan0';
 		$eni[]='iface wlan0 inet dhcp';
-	} else if ( 'static'==$es['mode'] ) {
+	} else if ( 'static'==$es['configuration'] ) {
 		/* static mode */
 		/* top of section */
 		$eni[]='allow-hotplug wlan0';

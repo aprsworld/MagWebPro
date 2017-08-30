@@ -1,6 +1,67 @@
+# Files
+* addDataPartition 
+
+   Use sfdisk (from linux-utils) to create data partition that fills SD card. Then mount it.
+
+* aprsStart
+
+   System startup script that sets clock, sets hostname, generates network configuration, creates data partition if needed, LCD messages, firewall
+
+* aprsStartDataGS
+
+   Starts DataGS
+
+* eepromSetHostname
+
+   Sets hostname of system from EEPROM
+
+* initialTestSetup
+
+   Initial factory setup of device
+
+* magnumReaderStart
+
+   Start magnum reader data source
+
+* netConfigJSON
+
+   Stub / test network config. Should be deleted.
+
+* networkFromJSON
+
+   Creates /etc/network/interfaces file from network config JSON (see aNetConf)
+
+* purgeHistory
+
+   Remove history and development settings prior to shipping
+
+* purgeLogLocal
+
+   Remove logged data prior to shipping
+
+* root-ro
+
+   Set root filesystem to read-only mode
+
+* root-rw
+
+   Set root filesystem to read-write mode
+
+* sethostname
+
+   Set system hostname. Change running hostname. Store hostname to EEPROM
+
+* tinyFrontStart
+   
+   Should be deleted.
+
+* wpaSupplicantScan
+
+   Interact with wpa_supplicant to scan for available networks. Cannot be used with running as an access point.
+
 # MagWebPro
 
-This documents covers the software that makes up the MagWebPro and derivitive devices. The MagWebPro software stack runs on Raspberry PI 3 hardware.
+This documents covers the software that makes up the MagWebPro and derivitive devices. The MagWebPro software stack runs on Raspberry PI 2 hardware.
 
 ## Raspbian
 

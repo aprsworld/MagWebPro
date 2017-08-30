@@ -9,10 +9,10 @@ $e['net']['interface']['eth0']['gateway']       ='192.168.10.1';
 $e['net']['interface']['eth0']['nameserver'][0] ='8.8.8.8';
 $e['net']['interface']['eth0']['nameserver'][1] ='8.8.4.4';
 
-$e['net']['interface']['wlan0']['mode']         ='';
-$e['net']['interface']['wlan0']['ip']           ='192.168.10.77';
-$e['net']['interface']['wlan0']['netmask']      ='255.255.255.0';
-$e['net']['interface']['wlan0']['gateway']      ='192.168.10.1';
+$e['net']['interface']['wlan0']['mode']         ='dhcp';
+//$e['net']['interface']['wlan0']['ip']           ='192.168.10.77';
+//$e['net']['interface']['wlan0']['netmask']      ='255.255.255.0';
+//$e['net']['interface']['wlan0']['gateway']      ='192.168.10.1';
 $e['net']['interface']['wlan0']['ssid']         ='aprsworld';
 $e['net']['interface']['wlan0']['psk']          ='zestopenguin';
 
