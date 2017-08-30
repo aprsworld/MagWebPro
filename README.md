@@ -23,10 +23,6 @@
 
    Start magnum reader data source
 
-* netConfigJSON
-
-   Stub / test network config. Should be deleted.
-
 * networkFromJSON
 
    Creates /etc/network/interfaces file from network config JSON (see aNetConf)
@@ -50,10 +46,6 @@
 * sethostname
 
    Set system hostname. Change running hostname. Store hostname to EEPROM
-
-* tinyFrontStart
-   
-   Should be deleted.
 
 * wpaSupplicantScan
 
