@@ -52,7 +52,8 @@ if ( isset($e['net']['interface']['eth0']['mode']) && 'client' == $e['net']['int
 	/* add device specific nameservers, if we have any */
 	if ( count($es['nameserver']) > 0 ) {
 		$dns=implode(" ",$es['nameserver']);
-		$eni[]=sprintf("\tdns-nameservers %s",$dns);
+		if ( strlen(trim($dns)) > 0 )
+			$eni[]=sprintf("\tdns-nameservers %s",$dns);
 	}
 
 	$eni[]='';
@@ -93,7 +94,8 @@ if ( isset($e['net']['interface']['wlan0']['mode']) && '' != $e['net']['interfac
 	/* add device specific nameservers, if we have any */
 	if ( isset($es['nameserver']) && count($es['nameserver']) > 0 ) {
 		$dns=implode(" ",$es['nameserver']);
-		$eni[]=sprintf("\tdns-nameservers %s",$dns);
+		if ( strlen(trim($dns)) > 0 )
+			$eni[]=sprintf("\tdns-nameservers %s",$dns);
 	}
 
 	
