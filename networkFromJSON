@@ -50,7 +50,7 @@ if ( isset($e['net']['interface']['eth0']['mode']) && 'client' == $e['net']['int
 	}
 	
 	/* add device specific nameservers, if we have any */
-	if ( count($es['nameserver']) > 0 ) {
+	if ( isset($es['nameserver']) && count($es['nameserver']) > 0 ) {
 		$dns=implode(" ",$es['nameserver']);
 		if ( strlen(trim($dns)) > 0 )
 			$eni[]=sprintf("\tdns-nameservers %s",$dns);
