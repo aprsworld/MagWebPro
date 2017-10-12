@@ -108,29 +108,41 @@ systemctl disable avahi-daemon
 
 ## overall structure of MagWebPro
 
-* basic system
+The following APRS World software components are used:
 
-Requires libi2c-dev
-```
-apt-get install libi2c-dev
-```
+* (APRS World's) [MagWebPro] (https://github.com/aprsworld/MagWebPro)
 
-* (APRS World) DataGS
+Utilities for starting and stopping MagWebPro related services, configuration of device, etc. Home of this document.
+
+
+* (APRS World's) [DataGS] (https://github.com/aprsworld/DataGS)
+
+Ingests data, logs, computes statistics, serves data via web 
+
 Requires java
 ```
 apt-get install oracle-java8-jdk
 ```
 
-* (APRS World) tinyFrontPanelLcd
 
-Splash screen put on screen using `basic.target` systemd service 
+* (APRS World's) [magnumReader] (https://github.com/aprsworld/magnumReader)
 
-Configuration program on screen once network is up
+Receives data from Magnum's RS-485 network. Understands proprieatary Magnum Network protocol. Extracts packets from 
+different devices and sends to TCP server.
 
-Requires a webserver capable of running PHP. We are using Monkey web server and php5-cgi
 
-* (APRS World) piNetConfig
+* (APRS World's) [aprsI2C] (https://github.com/aprsworld/aprsI2C)
 
-* (APRS World) i2c utilties
+Utilities for communicating with hardware real time clock and non-volatile memory.
 
-* (APRS World) magnumReader
+Requires libi2c-dev for I2C communications with hardware
+```
+apt-get install libi2c-dev
+```
+
+* (APRS World's) [aNetConf] (https://github.com/aprsworld/aNetConf)
+
+Interface for configuring network settings. Web front end for inputting settings. Web backend for converting to system
+configuration and for scanning wireless networks.
+
+
