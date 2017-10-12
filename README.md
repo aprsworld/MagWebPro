@@ -124,6 +124,10 @@ Requires java
 apt-get install oracle-java8-jdk
 ```
 
+Currently [RecordMagWebVariable.java] (https://github.com/aprsworld/DataGS/blob/master/src/dataGS/RecordMagWebVariable.java) decodes binary packets
+from magnumReader / Magnum Network data.
+
+
 
 * (APRS World's) [magnumReader] (https://github.com/aprsworld/magnumReader)
 
@@ -148,3 +152,7 @@ configuration and for scanning wireless networks.
 * (APRS World's) [tinyFrontOLED] (https://github.com/aprsworld/tinyFrontOLED)
 
 Yet to be written system control interface using tiny OLED display and front panel push buttons.
+
+* (APRS World's) [worldDataCollector] (https://github.com/aprsworld/WorldDataCollector)
+
+WorldData ingest program that takes binary packets and puts them in a database. 
