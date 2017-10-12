@@ -110,12 +110,12 @@ systemctl disable avahi-daemon
 
 The following APRS World software components are used:
 
-* (APRS World's) [MagWebPro] (https://github.com/aprsworld/MagWebPro)
+### (APRS World's) [MagWebPro] (https://github.com/aprsworld/MagWebPro)
 
 Utilities for starting and stopping MagWebPro related services, configuration of device, etc. Home of this document.
 
 
-* (APRS World's) [DataGS] (https://github.com/aprsworld/DataGS)
+### (APRS World's) [DataGS] (https://github.com/aprsworld/DataGS)
 
 Ingests data, logs, computes statistics, serves data via web 
 
@@ -129,13 +129,13 @@ from magnumReader / Magnum Network data.
 
 
 
-* (APRS World's) [magnumReader] (https://github.com/aprsworld/magnumReader)
+### (APRS World's) [magnumReader] (https://github.com/aprsworld/magnumReader)
 
 Receives data from Magnum's RS-485 network. Understands proprieatary Magnum Network protocol. Extracts packets from 
 different devices and sends to TCP server.
 
 
-* (APRS World's) [aprsI2C] (https://github.com/aprsworld/aprsI2C)
+### (APRS World's) [aprsI2C] (https://github.com/aprsworld/aprsI2C)
 
 Utilities for communicating with hardware real time clock and non-volatile memory.
 
@@ -144,15 +144,15 @@ Requires libi2c-dev for I2C communications with hardware
 apt-get install libi2c-dev
 ```
 
-* (APRS World's) [aNetConf] (https://github.com/aprsworld/aNetConf)
+### (APRS World's) [aNetConf] (https://github.com/aprsworld/aNetConf)
 
 Interface for configuring network settings. Web front end for inputting settings. Web backend for converting to system
 configuration and for scanning wireless networks.
 
-* (APRS World's) [tinyFrontOLED] (https://github.com/aprsworld/tinyFrontOLED)
+### (APRS World's) [tinyFrontOLED] (https://github.com/aprsworld/tinyFrontOLED)
 
 Yet to be written system control interface using tiny OLED display and front panel push buttons.
 
-* (APRS World's) [worldDataCollector] (https://github.com/aprsworld/WorldDataCollector)
+### (APRS World's) [worldDataCollector] (https://github.com/aprsworld/WorldDataCollector)
 
 WorldData ingest program that takes binary packets and puts them in a database. 
