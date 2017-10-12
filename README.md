@@ -145,4 +145,6 @@ apt-get install libi2c-dev
 Interface for configuring network settings. Web front end for inputting settings. Web backend for converting to system
 configuration and for scanning wireless networks.
 
+* (APRS World's) [tinyFrontOLED] (https://github.com/aprsworld/tinyFrontOLED)
 
+Yet to be written system control interface using tiny OLED display and front panel push buttons.
